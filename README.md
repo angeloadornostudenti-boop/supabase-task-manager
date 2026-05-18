@@ -8,7 +8,7 @@ Un'applicazione Full-Stack moderna per la gestione dei task, con architettura co
 - **Update**: Possibilità di sbarrare i task completati con un checkbox.
 - **Delete**: Rimozione definitiva dei task tramite l'icona del cestino.
 
-## 🛠️ Stack Tecnologico
+##  Stack Tecnologico
 - **Frontend**: HTML5, JavaScript (Fetch API), Tailwind CSS (tramite CDN)
 - **Backend**: Node.js, Express.js
 - **Database**: PostgreSQL ospitato su **Supabase**
