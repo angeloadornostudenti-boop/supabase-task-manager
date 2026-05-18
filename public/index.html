@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestore Task Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        <h1 class="text-3xl font-extrabold text-slate-800 mb-6 text-center tracking-tight">
+            I miei Task ✨
+        </h1>
+
+        <form id="task-form" class="flex gap-2 mb-6">
+            <input type="text" id="task-input" placeholder="Cosa devi fare oggi?" required
+                class="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 transition-all">
+            <button type="submit" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-xl transition-colors shadow-md shadow-indigo-200">
+                Aggiungi
+            </button>
+        </form>
+
+        <ul id="task-list" class="space-y-3 max-h-80 overflow-y-auto pr-1"></ul>
+    </div>
+
+    <script>
+        const taskForm = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const taskList = document.getElementById('task-list');
+
+        async function loadTasks() {
+            taskList.innerHTML = '';
+            const res = await fetch('/tasks');
+            const tasks = await res.json();
+
+            tasks.forEach(task => {
+                const isDone = task.is_completed;
+                const li = document.createElement('li');
+                
+                li.className = `flex justify-between items-center p-4 rounded-xl border transition-all shadow-sm group ${isDone ? 'bg-slate-100 border-transparent' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`;
+                
+                li.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${isDone ? 'checked' : ''} 
+                            onchange="toggleTask(${task.id}, ${isDone})"
+                            class="w-5 h-5 accent-indigo-600 cursor-pointer">
+                        <span class="font-medium ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}">
+                            ${task.title}
+                        </span>
+                    </div>
+                    <button onclick="deleteTask(${task.id})" 
+                        class="text-slate-300 hover:text-red-500 p-1 transition-colors">
+                        🗑️
+                    </button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        // NUOVA FUNZIONE: Inverte lo stato del task
+        async function toggleTask(id, currentStatus) {
+            await fetch(`/tasks/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_completed: !currentStatus }) // Inverte true/false
+            });
+            loadTasks();
+        }
+
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = taskInput.value;
+            await fetch('/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+            taskInput.value = '';
+            loadTasks();
+        });
+
+        async function deleteTask(id) {
+            await fetch(`/tasks/${id}`, { method: 'DELETE' });
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
